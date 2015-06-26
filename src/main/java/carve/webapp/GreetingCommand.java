@@ -8,6 +8,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
+import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.ServiceProvider;
 
 import com.netflix.hystrix.HystrixCommand;
@@ -17,6 +18,8 @@ import com.netflix.hystrix.HystrixCommandProperties;
 public class GreetingCommand extends HystrixCommand<String> {
 
     private static ServiceProvider<Object> serviceProvider;
+
+    private ServiceInstance<Object> serviceInstance;
 
     public GreetingCommand() {
         super(Setter.withGroupKey(
@@ -48,7 +51,8 @@ public class GreetingCommand extends HystrixCommand<String> {
 
     @Override
     protected String run() throws Exception {
-        String baseUri = serviceProvider.getInstance().buildUriSpec();
+        serviceInstance = serviceProvider.getInstance();
+        String baseUri = serviceInstance.buildUriSpec();
         System.out.println("BaseUri: " + baseUri);
         Client client = ClientBuilder.newClient();
         String greeting = client
@@ -59,6 +63,7 @@ public class GreetingCommand extends HystrixCommand<String> {
 
     @Override
     protected String getFallback() {
+        serviceProvider.noteError(serviceInstance);
         return "Fallback: hello";
     }
 }
