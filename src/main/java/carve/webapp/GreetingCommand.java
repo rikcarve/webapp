@@ -52,7 +52,7 @@ public class GreetingCommand extends HystrixCommand<String> {
         System.out.println("BaseUri: " + baseUri);
         Client client = ClientBuilder.newClient();
         String greeting = client
-                .target(baseUri + "/carve.service1/v1/greeting/").request()
+                .target(baseUri + "/carve.greeting/v1/greeting/").request()
                 .get(String.class);
         return greeting;
     }
