@@ -32,12 +32,12 @@ public class GreetingCommand extends HystrixCommand<String> {
         curatorFramework.start();
 
         ServiceDiscovery<Object> serviceDiscovery = ServiceDiscoveryBuilder
-                .builder(Object.class).basePath("load-balancing-example")
+                .builder(Object.class).basePath("carve")
                 .client(curatorFramework).build();
         try {
             serviceDiscovery.start();
             serviceProvider = serviceDiscovery.serviceProviderBuilder()
-                    .serviceName("worker").build();
+                    .serviceName("greeting").build();
             serviceProvider.start();
         } catch (Exception e) {
             e.printStackTrace();
