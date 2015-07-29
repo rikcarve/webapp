@@ -2,6 +2,7 @@ package carve.webapp;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -28,7 +29,6 @@ public class GreetingCommand extends HystrixCommand<String> {
                 .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
                         .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
                         .withExecutionTimeoutInMilliseconds(3000)
-                        .withExecutionTimeoutEnabled(true)
                         .withCircuitBreakerRequestVolumeThreshold(5)));
     }
 
@@ -61,15 +61,18 @@ public class GreetingCommand extends HystrixCommand<String> {
                 .establishConnectionTimeout(10, TimeUnit.SECONDS)
                 .socketTimeout(5, TimeUnit.SECONDS)
                 .build();
-        String greeting = client
-                .target(baseUri + "/carve.greeting/v1/greeting/").request()
-                .get(String.class);
-        return greeting;
+        try {
+            return client.target(baseUri + "/carve.greeting/v1/greeting/")
+                    .request()
+                    .get(String.class);
+        } catch (ProcessingException e) {
+            serviceProvider.noteError(serviceInstance);
+            throw e;
+        }
     }
 
     @Override
     protected String getFallback() {
-        serviceProvider.noteError(serviceInstance);
         return "Fallback: hello";
     }
 }
