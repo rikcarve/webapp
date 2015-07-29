@@ -1,7 +1,8 @@
 package carve.webapp;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -10,6 +11,7 @@ import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.ServiceProvider;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
@@ -22,11 +24,12 @@ public class GreetingCommand extends HystrixCommand<String> {
     private ServiceInstance<Object> serviceInstance;
 
     public GreetingCommand() {
-        super(Setter.withGroupKey(
-                HystrixCommandGroupKey.Factory.asKey("greeting"))
-                .andCommandPropertiesDefaults(
-                        HystrixCommandProperties.Setter()
-                                .withCircuitBreakerRequestVolumeThreshold(5)));
+        super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("greeting"))
+                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
+                        .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
+                        .withExecutionTimeoutInMilliseconds(3000)
+                        .withExecutionTimeoutEnabled(true)
+                        .withCircuitBreakerRequestVolumeThreshold(5)));
     }
 
     static {
@@ -54,7 +57,10 @@ public class GreetingCommand extends HystrixCommand<String> {
         serviceInstance = serviceProvider.getInstance();
         String baseUri = serviceInstance.buildUriSpec();
         System.out.println("BaseUri: " + baseUri);
-        Client client = ClientBuilder.newClient();
+        Client client = new ResteasyClientBuilder()
+                .establishConnectionTimeout(10, TimeUnit.SECONDS)
+                .socketTimeout(5, TimeUnit.SECONDS)
+                .build();
         String greeting = client
                 .target(baseUri + "/carve.greeting/v1/greeting/").request()
                 .get(String.class);
