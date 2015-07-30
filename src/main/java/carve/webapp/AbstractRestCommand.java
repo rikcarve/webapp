@@ -2,6 +2,7 @@ package carve.webapp;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 
 import org.apache.curator.x.discovery.ServiceInstance;
@@ -24,6 +25,9 @@ public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
     private String serviceName;
     private ServiceInstance<Object> serviceInstance;
     private ServiceProvider<Object> serviceProvider;
+
+    @Inject
+    private CuratorServiceLocator serviceLocator;
 
     public AbstractRestCommand(String serviceName) {
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(serviceName))
@@ -54,7 +58,7 @@ public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
      * @throws Exception
      */
     protected String createUri(String path) throws Exception {
-        serviceProvider = CuratorServiceLocator.getServiceProvider(serviceName);
+        serviceProvider = serviceLocator.getServiceProvider(serviceName);
         serviceInstance = serviceProvider.getInstance();
         String baseUri = serviceInstance.buildUriSpec();
         System.out.println("BaseUri: " + baseUri);

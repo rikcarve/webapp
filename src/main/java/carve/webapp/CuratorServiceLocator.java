@@ -3,6 +3,10 @@ package carve.webapp;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
@@ -14,11 +18,14 @@ import org.apache.curator.x.discovery.ServiceProvider;
  * Locates services (ServiceProvider) in Zookeeper.
  * Helper class to ease the use of Curator/Zookeeper
  */
+@Startup
+@Singleton
 public class CuratorServiceLocator {
-    private static ServiceDiscovery<Object> serviceDiscovery;
-    private static Map<String, ServiceProvider<Object>> serviceProviders = new HashMap<>();
+    private ServiceDiscovery<Object> serviceDiscovery;
+    private Map<String, ServiceProvider<Object>> serviceProviders = new HashMap<>();
 
-    static {
+    @PostConstruct
+    public void initCurator() {
         CuratorFramework curatorFramework = CuratorFrameworkFactory.newClient(
                 "localhost:2181", new RetryNTimes(5, 1000));
         curatorFramework.start();
@@ -31,6 +38,7 @@ public class CuratorServiceLocator {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Curator init complete");
     }
 
     /**
@@ -46,7 +54,7 @@ public class CuratorServiceLocator {
      * @return
      * @throws Exception
      */
-    public synchronized static ServiceProvider<Object> getServiceProvider(String serviceName) throws Exception {
+    public ServiceProvider<Object> getServiceProvider(String serviceName) throws Exception {
         ServiceProvider<Object> serviceProvider = serviceProviders.get(serviceName);
         if (serviceProvider == null) {
             serviceProvider = serviceDiscovery.serviceProviderBuilder()
