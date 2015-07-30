@@ -61,6 +61,10 @@ public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
         return baseUri + path;
     }
 
+    /**
+     * When a service fails (in your catch clause) report it here, so that this service instance
+     * will be marked as down.
+     */
     protected void noteError() {
         serviceProvider.noteError(serviceInstance);
     }
