@@ -13,7 +13,7 @@ import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandProperties;
 
 /**
- * Abstarct base class for all "resilient" commands / calls.
+ * Abstract base class for all "resilient" commands / calls.
  * Uses Curator and Hystrix underneath.
  * @author tkdak
  *
@@ -34,7 +34,12 @@ public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
         this.serviceName = serviceName;
     }
 
-    protected Client getClient(int timeoutMs) {
+    /**
+     * Create a REST {@link Client} with the given socket timeout
+     * @param timeoutMs
+     * @return
+     */
+    protected Client createRestClient(int timeoutMs) {
         Client client = new ResteasyClientBuilder()
                 .establishConnectionTimeout(10, TimeUnit.SECONDS)
                 .socketTimeout(timeoutMs, TimeUnit.MILLISECONDS)
@@ -42,7 +47,14 @@ public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
         return client;
     }
 
-    protected String getUri(String path) throws Exception {
+    /**
+     * Creates the URI string by getting an service instance (baseUri)
+     * and adding the given path
+     * @param path
+     * @return
+     * @throws Exception
+     */
+    protected String createUri(String path) throws Exception {
         serviceProvider = CuratorServiceLocator.getServiceProvider(serviceName);
         serviceInstance = serviceProvider.getInstance();
         String baseUri = serviceInstance.buildUriSpec();

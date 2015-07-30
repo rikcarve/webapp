@@ -11,9 +11,9 @@ public class GreetingCommand extends AbstractRestCommand<String> {
 
     @Override
     protected String run() throws Exception {
-        Client client = getClient(3000);
+        Client client = createRestClient(3000);
         try {
-            return client.target(getUri("/carve.greeting/v1/greeting/"))
+            return client.target(createUri("/carve.greeting/v1/greeting/"))
                     .request()
                     .get(String.class);
         } catch (ProcessingException e) {
