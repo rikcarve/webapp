@@ -29,7 +29,6 @@ public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(serviceName))
                 .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
                         .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
-                        .withExecutionTimeoutInMilliseconds(3000)
                         .withCircuitBreakerRequestVolumeThreshold(5)));
         this.serviceName = serviceName;
     }
