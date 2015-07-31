@@ -19,9 +19,6 @@ import com.netflix.hystrix.HystrixCommandProperties;
  */
 public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
 
-    // @Inject
-    // private CuratorServiceLocator serviceLocator;
-
     public AbstractRestCommand(String serviceName) {
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(serviceName))
                 .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
