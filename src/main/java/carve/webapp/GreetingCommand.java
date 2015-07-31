@@ -10,7 +10,7 @@ import org.apache.curator.x.discovery.ServiceProvider;
 public class GreetingCommand extends AbstractRestCommand<String> {
 
     @Inject
-    @CuratorServiceName("greeting")
+    @CuratorServiceProvider("greeting")
     private ServiceProvider<Object> serviceProvider;
 
     public GreetingCommand() {
@@ -22,7 +22,7 @@ public class GreetingCommand extends AbstractRestCommand<String> {
         Client client = createRestClient(3000);
         ServiceInstance<Object> serviceInstance = serviceProvider.getInstance();
         try {
-            return client.target(serviceInstance.buildUriSpec() + createUri("/carve.greeting/v1/greeting/"))
+            return client.target(serviceInstance.buildUriSpec() + "/carve.greeting/v1/greeting/")
                     .request()
                     .get(String.class);
         } catch (ProcessingException e) {

@@ -2,11 +2,8 @@ package carve.webapp;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 
-import org.apache.curator.x.discovery.ServiceInstance;
-import org.apache.curator.x.discovery.ServiceProvider;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 import com.netflix.hystrix.HystrixCommand;
@@ -22,19 +19,14 @@ import com.netflix.hystrix.HystrixCommandProperties;
  */
 public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
 
-    private String serviceName;
-    private ServiceInstance<Object> serviceInstance;
-    private ServiceProvider<Object> serviceProvider;
-
-    @Inject
-    private CuratorServiceLocator serviceLocator;
+    // @Inject
+    // private CuratorServiceLocator serviceLocator;
 
     public AbstractRestCommand(String serviceName) {
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(serviceName))
                 .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
                         .withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
                         .withCircuitBreakerRequestVolumeThreshold(5)));
-        this.serviceName = serviceName;
     }
 
     /**
@@ -50,26 +42,4 @@ public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
         return client;
     }
 
-    /**
-     * Creates the URI string by getting an service instance (baseUri)
-     * and adding the given path
-     * @param path
-     * @return
-     * @throws Exception
-     */
-    protected String createUri(String path) throws Exception {
-        serviceProvider = serviceLocator.myServiceProvider(serviceName);
-        serviceInstance = serviceProvider.getInstance();
-        String baseUri = serviceInstance.buildUriSpec();
-        System.out.println("BaseUri: " + baseUri);
-        return baseUri + path;
-    }
-
-    /**
-     * When a service fails (in your catch clause) report it here, so that this service instance
-     * will be marked as down.
-     */
-    protected void noteError() {
-        serviceProvider.noteError(serviceInstance);
-    }
 }

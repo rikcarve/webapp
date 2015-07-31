@@ -68,8 +68,9 @@ public class CuratorServiceLocator {
     }
 
     @Produces
+    @CuratorServiceProvider
     public ServiceProvider<Object> getServiceProvider(InjectionPoint ip) throws Exception {
-        String serviceName = ip.getAnnotated().getAnnotation(CuratorServiceName.class).value();
+        String serviceName = ip.getAnnotated().getAnnotation(CuratorServiceProvider.class).value();
         return myServiceProvider(serviceName);
     }
 }
