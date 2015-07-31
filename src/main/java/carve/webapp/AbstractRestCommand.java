@@ -58,7 +58,7 @@ public abstract class AbstractRestCommand<T> extends HystrixCommand<T> {
      * @throws Exception
      */
     protected String createUri(String path) throws Exception {
-        serviceProvider = serviceLocator.getServiceProvider(serviceName);
+        serviceProvider = serviceLocator.myServiceProvider(serviceName);
         serviceInstance = serviceProvider.getInstance();
         String baseUri = serviceInstance.buildUriSpec();
         System.out.println("BaseUri: " + baseUri);

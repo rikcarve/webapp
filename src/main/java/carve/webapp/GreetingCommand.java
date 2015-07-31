@@ -1,9 +1,17 @@
 package carve.webapp;
 
+import javax.inject.Inject;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 
+import org.apache.curator.x.discovery.ServiceInstance;
+import org.apache.curator.x.discovery.ServiceProvider;
+
 public class GreetingCommand extends AbstractRestCommand<String> {
+
+    @Inject
+    @CuratorServiceName("greeting")
+    private ServiceProvider<Object> serviceProvider;
 
     public GreetingCommand() {
         super("greeting");
@@ -12,12 +20,13 @@ public class GreetingCommand extends AbstractRestCommand<String> {
     @Override
     protected String run() throws Exception {
         Client client = createRestClient(3000);
+        ServiceInstance<Object> serviceInstance = serviceProvider.getInstance();
         try {
-            return client.target(createUri("/carve.greeting/v1/greeting/"))
+            return client.target(serviceInstance.buildUriSpec() + createUri("/carve.greeting/v1/greeting/"))
                     .request()
                     .get(String.class);
         } catch (ProcessingException e) {
-            noteError();
+            serviceProvider.noteError(serviceInstance);
             throw e;
         }
     }

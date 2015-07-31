@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -54,7 +56,7 @@ public class CuratorServiceLocator {
      * @return
      * @throws Exception
      */
-    public ServiceProvider<Object> getServiceProvider(String serviceName) throws Exception {
+    public ServiceProvider<Object> myServiceProvider(String serviceName) throws Exception {
         ServiceProvider<Object> serviceProvider = serviceProviders.get(serviceName);
         if (serviceProvider == null) {
             serviceProvider = serviceDiscovery.serviceProviderBuilder()
@@ -65,4 +67,9 @@ public class CuratorServiceLocator {
         return serviceProvider;
     }
 
+    @Produces
+    public ServiceProvider<Object> getServiceProvider(InjectionPoint ip) throws Exception {
+        String serviceName = ip.getAnnotated().getAnnotation(CuratorServiceName.class).value();
+        return myServiceProvider(serviceName);
+    }
 }
