@@ -7,7 +7,7 @@ import javax.ws.rs.client.Client;
 import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.ServiceProvider;
 
-public class GreetingCommand extends AbstractRestCommand<String> {
+public class GreetingCommand extends AbstractHystrixCommand<String> {
 
     @Inject
     @CuratorServiceProvider("greeting")
@@ -19,7 +19,7 @@ public class GreetingCommand extends AbstractRestCommand<String> {
 
     @Override
     protected String run() throws Exception {
-        Client client = createRestClient(3000);
+        Client client = RestHelper.createRestClient(3000);
         ServiceInstance<Object> serviceInstance = serviceProvider.getInstance();
         try {
             return client.target(serviceInstance.buildUriSpec() + "/carve.greeting/v1/greeting/")
